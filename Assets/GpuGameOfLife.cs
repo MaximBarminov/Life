@@ -28,6 +28,7 @@ public class GpuGameOfLife : MonoBehaviour
     private Vector3 _mousePositionOrigin;
     private Vector2 _offset;
     private Vector2 _offsetOrigin;
+    private float _offsetTime;
     private GUIStyle _offStyle;
     private GUIStyle _onStyle;
     private bool _paused;
@@ -70,18 +71,18 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
             _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
-            _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[↑] change rules: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
-            _stringBuilder.AppendLine($"[↓] change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
+            _stringBuilder.AppendLine($"[↑] [↓] change rules: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[←] [→] change speed: {_timeScale}x");
             _stringBuilder.AppendLine($"[SPACE] toggle pause");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[RMB] pan, [R] reset");
+            _stringBuilder.AppendLine($"[N] change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
+            _stringBuilder.AppendLine();
+            _stringBuilder.AppendLine($"[RMB] pan, twice to reset");
             _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"Spawn pattern:");
+            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
+            _stringBuilder.AppendLine($"Spawn pattern ([R] reset):");
 
             GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
 
@@ -149,7 +150,7 @@ public class GpuGameOfLife : MonoBehaviour
         _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
         _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
 
-        _pattern.Add(new Vector2Int(0, 0));
+        InitializePattern();
 
         _backgroundColorTexture = new Texture2D(1, 1);
         _foregroundColorTexture = new Texture2D(1, 1);
@@ -194,7 +195,7 @@ public class GpuGameOfLife : MonoBehaviour
             _paused ^= true;
 
         if (Input.GetKeyDown(KeyCode.R))
-            _offset = new Vector2();
+            InitializePattern();
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
             SpawnCenter();
@@ -218,10 +219,13 @@ public class GpuGameOfLife : MonoBehaviour
             _timeScale /= 2f;
 
         if (Input.GetKeyDown(KeyCode.UpArrow))
-            _currentRuleIndex = (_currentRuleIndex + 1) % _rules.Count;
+            Next(ref _currentRuleIndex, 1, _rules);
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
-            _currentNeighborhoodIndex = (_currentNeighborhoodIndex + 1) % _neighborhoods.Count;
+            Next(ref _currentRuleIndex, -1, _rules);
+
+        if (Input.GetKeyDown(KeyCode.N))
+            Next(ref _currentNeighborhoodIndex, 1, _neighborhoods);
 
         if (Input.mouseScrollDelta.y > 0)
             _scale *= 2;
@@ -233,6 +237,11 @@ public class GpuGameOfLife : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
+            if (Time.time - _offsetTime < 0.5f)
+                _offset = new Vector2();
+
+            _offsetTime = Time.time;
+
             _offsetOrigin = _offset;
             _mousePositionOrigin = Input.mousePosition;
         }
@@ -260,6 +269,11 @@ public class GpuGameOfLife : MonoBehaviour
         Shader.SetGlobalFloat("_Decoy", _decoy ? 1 : 0);
     }
 
+    private Color GetForegroundColor()
+    {
+        return _rainbowMode ? Color.HSVToRGB(Time.time % 1, 1, 1) : ForegroundColor;
+    }
+
     private void InitializeColors(Action spawnAction = null)
     {
         for (var i = 0; i < _colors.Length; i++)
@@ -273,37 +287,10 @@ public class GpuGameOfLife : MonoBehaviour
         Graphics.Blit(_texture, _renderTexture);
     }
 
-    private void SpawnCenter()
+    private void InitializePattern()
     {
-        InitializeColors(() => { Spawn(_texture.width / 2, _texture.height / 2); });
-    }
-
-    private void SpawnRandom(float p)
-    {
-        InitializeColors(() =>
-        {
-            var count = _texture.width * _texture.height * p;
-            for (var i = 0; i < count; i++)
-                Spawn(UnityEngine.Random.Range(0, _texture.width), UnityEngine.Random.Range(0, _texture.height));
-        });
-    }
-
-    private void Spawn(int x, int y)
-    {
-        foreach (var p in _pattern)
-        {
-            var px = x + p.x;
-            var py = y + p.y;
-
-            var i = px + py * _texture.width;
-            if (i >= 0 && i < _colors.Length)
-                _colors[i] = GetForegroundColor();
-        }
-    }
-
-    private Color GetForegroundColor()
-    {
-        return _rainbowMode ? Color.HSVToRGB(Time.time % 1, 1, 1) : ForegroundColor;
+        _pattern.Clear();
+        _pattern.Add(new Vector2Int(0, 0));
     }
 
     private void InvalidateTheme()
@@ -322,6 +309,39 @@ public class GpuGameOfLife : MonoBehaviour
         _textAreaStyle.normal.textColor = ForegroundColor;
 
         InitializeColors();
+    }
+
+    private void Next<T>(ref int index, int deltaIndex, List<T> list)
+    {
+        index = ((index + deltaIndex) % list.Count + list.Count) % list.Count;
+    }
+
+    private void Spawn(int x, int y)
+    {
+        foreach (var p in _pattern)
+        {
+            var px = x + p.x;
+            var py = y + p.y;
+
+            var i = px + py * _texture.width;
+            if (i >= 0 && i < _colors.Length)
+                _colors[i] = GetForegroundColor();
+        }
+    }
+
+    private void SpawnCenter()
+    {
+        InitializeColors(() => { Spawn(_texture.width / 2, _texture.height / 2); });
+    }
+
+    private void SpawnRandom(float p)
+    {
+        InitializeColors(() =>
+        {
+            var count = _texture.width * _texture.height * p / _pattern.Count;
+            for (var i = 0; i < count; i++)
+                Spawn(UnityEngine.Random.Range(0, _texture.width), UnityEngine.Random.Range(0, _texture.height));
+        });
     }
 
     public class Neighborhood
