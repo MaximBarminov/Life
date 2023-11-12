@@ -71,7 +71,7 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
             _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[↑] [↓] change rules: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
+            _stringBuilder.AppendLine($"[↑] [↓] change rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[←] [→] change speed: {_timeScale}x");
             _stringBuilder.AppendLine($"[SPACE] toggle pause");
@@ -82,7 +82,7 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
-            _stringBuilder.AppendLine($"Spawn pattern ([R] reset):");
+            _stringBuilder.AppendLine($"Spawn pattern, [R] to reset:");
 
             GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
 
@@ -138,14 +138,23 @@ public class GpuGameOfLife : MonoBehaviour
 
         _colors = new Color32[_texture.width * _texture.height];
 
-        _rules.Add(RuleBuilder.B(3).S(2, 3));
-        _rules.Add(RuleBuilder.B(1).S(0, 1, 2, 3, 4, 5, 6, 7, 8));
-        _rules.Add(RuleBuilder.B(3).S(1, 2, 3, 4, 5));
-        _rules.Add(RuleBuilder.B(3, 5, 6, 7, 8).S(5, 6, 7, 8));
-        _rules.Add(RuleBuilder.B(3, 4, 5).S(4, 5, 6, 7));
-        _rules.Add(RuleBuilder.B(2).S());
-        _rules.Add(RuleBuilder.B(2, 3, 4).S());
-        _rules.Add(RuleBuilder.B(3).S(4, 5, 6, 7, 8));
+        _rules.Add(new Rule("B3/S23", "Life"));
+        _rules.Add(new Rule("B1/S012345678"));
+        _rules.Add(new Rule("B3/S12345"));
+        _rules.Add(new Rule("B35678/S5678", "Diamoeba"));
+        _rules.Add(new Rule("B345/S4567"));
+        _rules.Add(new Rule("B2/S", "Seeds"));
+        _rules.Add(new Rule("B234/S"));
+        _rules.Add(new Rule("B3/S45678"));
+        _rules.Add(new Rule("B25/S4"));
+        _rules.Add(new Rule("B3/S012345678", "Life without Death"));
+        _rules.Add(new Rule("B34/S34", "34 Life"));
+        _rules.Add(new Rule("B1357/S1357", "Replicator"));
+        _rules.Add(new Rule("B36/S125", "2x2"));
+        _rules.Add(new Rule("B36/S23", "HighLife"));
+        _rules.Add(new Rule("B3678/S34678", "Day & Night"));
+        _rules.Add(new Rule("B368/S245", "Morley"));
+        _rules.Add(new Rule("B4678/S35678", "Anneal"));
 
         _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
         _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
@@ -368,46 +377,34 @@ public class GpuGameOfLife : MonoBehaviour
         public readonly float[] S = new float[9];
 
         private readonly string _name;
+        private readonly string _notation;
 
-        public Rule(int[] b, int[] s)
+        public Rule(string notation, string name = null)
         {
-            _name = "B";
-            Add(b, B, ref _name);
-            _name += "/S";
-            Add(s, S, ref _name);
+            _notation = notation;
+            _name = name;
 
-            static void Add(int[] input, float[] output, ref string name)
+            var items = _notation.Split('/');
+
+            Parse(items[0], B);
+            Parse(items[1], S);
+
+            static void Parse(string input, float[] output)
             {
-                var hashSet = new HashSet<int>(input);
+                var hashSet = new HashSet<int>();
+
+                for (var i = 1; i < input.Length; i++)
+                    hashSet.Add(int.Parse(input[i].ToString()));
+
                 for (var i = 0; i < output.Length; i++)
-                {
                     if (hashSet.Contains(i))
-                    {
                         output[i] = 1;
-                        name += i;
-                    }
-                }
             }
         }
 
         public override string ToString()
         {
-            return _name;
-        }
-    }
-
-    public class RuleBuilder
-    {
-        private int[] _b;
-
-        public static RuleBuilder B(params int[] b)
-        {
-            return new RuleBuilder { _b = b };
-        }
-
-        public Rule S(params int[] s)
-        {
-            return new Rule(_b, s);
+            return _name != null ? _notation + " - " + _name : _notation;
         }
     }
 }
