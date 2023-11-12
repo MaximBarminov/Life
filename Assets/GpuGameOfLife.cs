@@ -81,7 +81,7 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[RMB] pan, twice to reset");
             _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] [6] spawn");
+            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
             _stringBuilder.AppendLine($"Spawn pattern, [R] to reset:");
 
             GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
@@ -215,19 +215,16 @@ public class GpuGameOfLife : MonoBehaviour
             SpawnCenter();
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            SpawnRandom(0.001f);
+            SpawnRandom(0.0001f);
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            SpawnRandom(0.01f);
+            SpawnRandom(0.001f);
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
+            SpawnRandom(0.01f);
+
+        if (Input.GetKeyDown(KeyCode.Alpha5))
             SpawnRandom(0.1f);
-
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-            SpawnRandom(0.2f);
-
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-            SpawnRandom(0.4f);
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
             Next(ref _currentRuleIndex, 1, _rules);
