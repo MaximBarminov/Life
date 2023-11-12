@@ -71,9 +71,9 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
             _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[↑] [↓] change rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
+            _stringBuilder.AppendLine($"[←] [→] change rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[←] [→] change speed: {_timeScale}x");
+            _stringBuilder.AppendLine($"[↑] [↓] change speed: {_timeScale}x");
             _stringBuilder.AppendLine($"[SPACE] toggle pause");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[N] change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
@@ -81,7 +81,7 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[RMB] pan, twice to reset");
             _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
+            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] [6] spawn");
             _stringBuilder.AppendLine($"Spawn pattern, [R] to reset:");
 
             GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
@@ -215,28 +215,31 @@ public class GpuGameOfLife : MonoBehaviour
             SpawnCenter();
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            SpawnRandom(0.0001f);
+            SpawnRandom(0.001f);
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            SpawnRandom(0.05f);
+            SpawnRandom(0.01f);
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
+            SpawnRandom(0.1f);
+
+        if (Input.GetKeyDown(KeyCode.Alpha5))
             SpawnRandom(0.2f);
 
         if (Input.GetKeyDown(KeyCode.Alpha5))
-            SpawnRandom(0.35f);
+            SpawnRandom(0.4f);
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
-            _timeScale *= 2f;
-
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-            _timeScale /= 2f;
-
-        if (Input.GetKeyDown(KeyCode.UpArrow))
             Next(ref _currentRuleIndex, 1, _rules);
 
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
             Next(ref _currentRuleIndex, -1, _rules);
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+            _timeScale *= 2f;
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+            _timeScale /= 2f;
 
         if (Input.GetKeyDown(KeyCode.N))
             Next(ref _currentNeighborhoodIndex, 1, _neighborhoods);
