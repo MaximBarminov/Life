@@ -139,13 +139,14 @@ public class GpuGameOfLife : MonoBehaviour
         _colors = new Color32[_texture.width * _texture.height];
 
         _rules.Add(new Rule("B3/S23", "Life"));
-        _rules.Add(new Rule("B1/S012345678"));
-        _rules.Add(new Rule("B3/S12345"));
+        _rules.Add(new Rule("B1/S012345678", "H-trees"));
+        _rules.Add(new Rule("B3/S12345", "Maze"));
+        _rules.Add(new Rule("B3/S1234", "Mazectric"));
         _rules.Add(new Rule("B35678/S5678", "Diamoeba"));
-        _rules.Add(new Rule("B345/S4567"));
+        _rules.Add(new Rule("B345/S4567", "Assimilation"));
         _rules.Add(new Rule("B2/S", "Seeds"));
-        _rules.Add(new Rule("B234/S"));
-        _rules.Add(new Rule("B3/S45678"));
+        _rules.Add(new Rule("B234/S", "Serviettes"));
+        _rules.Add(new Rule("B3/S45678", "Coral"));
         _rules.Add(new Rule("B25/S4"));
         _rules.Add(new Rule("B3/S012345678", "Life without Death"));
         _rules.Add(new Rule("B34/S34", "34 Life"));
@@ -155,6 +156,10 @@ public class GpuGameOfLife : MonoBehaviour
         _rules.Add(new Rule("B3678/S34678", "Day & Night"));
         _rules.Add(new Rule("B368/S245", "Morley"));
         _rules.Add(new Rule("B4678/S35678", "Anneal"));
+        _rules.Add(new Rule("B1/S134567", "Snakeskin"));
+        _rules.Add(new Rule("B1/S1", "Gnarl"));
+        _rules.Add(new Rule("B38/S238", "HoneyLife"));
+        _rules.Add(new Rule("B3678/S135678", "Castles"));
 
         _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
         _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
