@@ -8,7 +8,7 @@ public class GpuGameOfLife : MonoBehaviour
     public Font Font;
     public Material Material;
 
-    private const int SpawnPatternRadius = 4;
+    private const int SpawnPatternRadius = 3;
 
     private readonly List<Neighborhood> _neighborhoods = new();
     private readonly List<Rule> _rules = new();
