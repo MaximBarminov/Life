@@ -8,26 +8,35 @@ public class GpuGameOfLife : MonoBehaviour
     public Font Font;
     public Material Material;
 
+    private const int PatternExtraSize = 3;
+
     private readonly List<Neighborhood> _neighborhoods = new();
+    private readonly HashSet<Vector2Int> _pattern = new();
     private readonly List<Rule> _rules = new();
     private readonly StringBuilder _stringBuilder = new();
 
+    private Texture2D _backgroundColorTexture;
     private Color32[] _colors;
+    private GUIStyle _containerStyle;
     private int _currentNeighborhoodIndex;
     private int _currentRuleIndex;
     private bool _darkMode;
     private bool _decoy;
+    private Texture2D _disabledColorTexture;
     private float _elapsedTime;
+    private Texture2D _foregroundColorTexture;
     private Vector3 _mousePositionOrigin;
     private Vector2 _offset;
     private Vector2 _offsetOrigin;
+    private GUIStyle _offStyle;
+    private GUIStyle _onStyle;
     private bool _paused;
     private bool _rainbowMode;
     private RenderTexture _renderTexture;
     private RenderTexture _renderTexture2;
+    private GUIStyle _rowStyle;
     private int _scale = 2;
     private bool _showUI = true;
-    private Texture2D _textAreaBackgroundTexture;
     private GUIStyle _textAreaStyle;
     private Texture2D _texture;
     private float _timeScale = 1;
@@ -42,32 +51,65 @@ public class GpuGameOfLife : MonoBehaviour
 
     protected void OnGUI()
     {
-        var width = _renderTexture.width * _scale;
-        var height = _renderTexture.height * _scale;
-        var x = Screen.width / 2 + _offset.x - width / 2;
-        var y = Screen.height / 2 + _offset.y - height / 2;
-        GUI.DrawTexture(new Rect(x, y, width, height), _renderTexture);
+        {
+            var width = _renderTexture.width * _scale;
+            var height = _renderTexture.height * _scale;
+            var x = Screen.width / 2 + _offset.x - width / 2;
+            var y = Screen.height / 2 + _offset.y - height / 2;
+            GUI.DrawTexture(new Rect(x, y, width, height), _renderTexture);
+        }
 
         if (_showUI)
         {
+            GUILayout.BeginVertical(_containerStyle);
+
             _stringBuilder.Clear();
-            _stringBuilder.AppendLine($"[F1] to toggle UI");
+            _stringBuilder.AppendLine($"[F1] toggle UI");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[F2] to toggle dark mode: {ToOnOff(_darkMode)}");
-            _stringBuilder.AppendLine($"[F3] to toggle rainbow mode: {ToOnOff(_rainbowMode)}");
-            _stringBuilder.AppendLine($"[F4] to toggle decoy: {ToOnOff(_decoy)}");
+            _stringBuilder.AppendLine($"[F2] toggle dark mode: {ToOnOff(_darkMode)}");
+            _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
+            _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] [6] to spawn cells");
+            _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[↑] to change rules: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
-            _stringBuilder.AppendLine($"[↓] to change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
+            _stringBuilder.AppendLine($"[↑] change rules: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
+            _stringBuilder.AppendLine($"[↓] change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[←] [→] to change simulation speed: {_timeScale}x");
-            _stringBuilder.AppendLine($"[SPACE] to toggle pause");
+            _stringBuilder.AppendLine($"[←] [→] change speed: {_timeScale}x");
+            _stringBuilder.AppendLine($"[SPACE] toggle pause");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[RMB] to pan, [R] to reset");
-            _stringBuilder.AppendLine($"[SCROLL WHEEL] to zoom: {_scale}x");
+            _stringBuilder.AppendLine($"[RMB] pan, [R] reset");
+            _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
+            _stringBuilder.AppendLine();
+            _stringBuilder.AppendLine($"Spawn pattern:");
+
             GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
+
+            GUILayout.Space(10);
+
+            for (var y = PatternExtraSize; y >= -PatternExtraSize; y--)
+            {
+                GUILayout.BeginHorizontal(_rowStyle);
+                for (var x = -PatternExtraSize; x <= PatternExtraSize; x++)
+                {
+                    var xy = new Vector2Int(x, y);
+                    var contains = _pattern.Contains(xy);
+                    if (GUILayout.Button(string.Empty, contains ? _onStyle : _offStyle, GUILayout.Width(16), GUILayout.Height(16)))
+                    {
+                        if (contains)
+                        {
+                            _pattern.Remove(xy);
+                        }
+                        else
+                        {
+                            _pattern.Add(xy);
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndVertical();
         }
 
         static string ToOnOff(bool flag) => flag ? "on" : "off";
@@ -75,18 +117,6 @@ public class GpuGameOfLife : MonoBehaviour
 
     protected void Start()
     {
-        _rules.Add(RuleBuilder.B(3).S(2, 3));
-        _rules.Add(RuleBuilder.B(1).S(0, 1, 2, 3, 4, 5, 6, 7, 8));
-        _rules.Add(RuleBuilder.B(3).S(1, 2, 3, 4, 5));
-        _rules.Add(RuleBuilder.B(3, 5, 6, 7, 8).S(5, 6, 7, 8));
-        _rules.Add(RuleBuilder.B(3, 4, 5).S(4, 5, 6, 7));
-        _rules.Add(RuleBuilder.B(2).S());
-        _rules.Add(RuleBuilder.B(2, 3, 4).S());
-        _rules.Add(RuleBuilder.B(3).S(4, 5, 6, 7, 8));
-
-        _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
-        _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
-
         _texture = new Texture2D(Screen.width / 2, Screen.height / 2)
         {
             filterMode = FilterMode.Point,
@@ -107,15 +137,36 @@ public class GpuGameOfLife : MonoBehaviour
 
         _colors = new Color32[_texture.width * _texture.height];
 
-        _textAreaBackgroundTexture = new Texture2D(1, 1);
+        _rules.Add(RuleBuilder.B(3).S(2, 3));
+        _rules.Add(RuleBuilder.B(1).S(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        _rules.Add(RuleBuilder.B(3).S(1, 2, 3, 4, 5));
+        _rules.Add(RuleBuilder.B(3, 5, 6, 7, 8).S(5, 6, 7, 8));
+        _rules.Add(RuleBuilder.B(3, 4, 5).S(4, 5, 6, 7));
+        _rules.Add(RuleBuilder.B(2).S());
+        _rules.Add(RuleBuilder.B(2, 3, 4).S());
+        _rules.Add(RuleBuilder.B(3).S(4, 5, 6, 7, 8));
 
-        _textAreaStyle = new GUIStyle
-        {
-            font = Font,
-            fontSize = 18,
-            padding = new RectOffset(10, 10, 10, 10)
-        };
-        _textAreaStyle.normal.background = _textAreaBackgroundTexture;
+        _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
+        _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
+
+        _pattern.Add(new Vector2Int(0, 0));
+
+        _backgroundColorTexture = new Texture2D(1, 1);
+        _foregroundColorTexture = new Texture2D(1, 1);
+        _disabledColorTexture = new Texture2D(1, 1);
+
+        _containerStyle = new GUIStyle { padding = new RectOffset(10, 10, 10, 10) };
+        _containerStyle.normal.background = _backgroundColorTexture;
+
+        _textAreaStyle = new GUIStyle { font = Font, fontSize = 18 };
+
+        _rowStyle = new GUIStyle { margin = new RectOffset(10, 0, 0, 0) };
+
+        _onStyle = new GUIStyle { margin = new RectOffset(0, 1, 0, 1) };
+        _onStyle.normal.background = _foregroundColorTexture;
+
+        _offStyle = new GUIStyle { margin = new RectOffset(0, 1, 0, 1) };
+        _offStyle.normal.background = _disabledColorTexture;
 
         Shader.SetGlobalVector("_MainTexSize", new Vector4(1.0f / _texture.width, 1.0f / _texture.height));
 
@@ -146,22 +197,19 @@ public class GpuGameOfLife : MonoBehaviour
             _offset = new Vector2();
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            FillCenter(0);
+            SpawnCenter();
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            FillCenter(1);
+            SpawnRandom(0.0001f);
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            FillRandom(0.9999f);
+            SpawnRandom(0.05f);
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
-            FillRandom(0.95f);
+            SpawnRandom(0.2f);
 
         if (Input.GetKeyDown(KeyCode.Alpha5))
-            FillRandom(0.8f);
-
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-            FillRandom(0.65f);
+            SpawnRandom(0.35f);
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
             _timeScale *= 2f;
@@ -205,17 +253,19 @@ public class GpuGameOfLife : MonoBehaviour
             }
         }
 
+        Shader.SetGlobalFloatArray("_N", CurrentNeighborhood.N);
         Shader.SetGlobalFloatArray("_B", CurrentRule.B);
         Shader.SetGlobalFloatArray("_S", CurrentRule.S);
-        Shader.SetGlobalFloatArray("_N", CurrentNeighborhood.N);
         Shader.SetGlobalColor("_ForegroundColor", GetForegroundColor());
         Shader.SetGlobalFloat("_Decoy", _decoy ? 1 : 0);
     }
 
-    private void Fill(Func<int, Color32> getColor)
+    private void InitializeColors(Action spawnAction = null)
     {
         for (var i = 0; i < _colors.Length; i++)
-            _colors[i] = getColor(i);
+            _colors[i] = Color.clear;
+
+        spawnAction?.Invoke();
 
         _texture.SetPixels32(_colors);
         _texture.Apply();
@@ -223,28 +273,32 @@ public class GpuGameOfLife : MonoBehaviour
         Graphics.Blit(_texture, _renderTexture);
     }
 
-    private void FillCenter(int radius)
+    private void SpawnCenter()
     {
-        Fill(i =>
+        InitializeColors(() => { Spawn(_texture.width / 2, _texture.height / 2); });
+    }
+
+    private void SpawnRandom(float p)
+    {
+        InitializeColors(() =>
         {
-            var y = i / _texture.width;
-            var x = i - y * _texture.width;
-
-            var dx = Mathf.Abs(x - _texture.width / 2);
-            var dy = Mathf.Abs(y - _texture.height / 2);
-
-            return dx <= radius && dy <= radius ? GetForegroundColor() : Color.clear;
+            var count = _texture.width * _texture.height * p;
+            for (var i = 0; i < count; i++)
+                Spawn(UnityEngine.Random.Range(0, _texture.width), UnityEngine.Random.Range(0, _texture.height));
         });
     }
 
-    private void FillEmpty()
+    private void Spawn(int x, int y)
     {
-        Fill(i => Color.clear);
-    }
+        foreach (var p in _pattern)
+        {
+            var px = x + p.x;
+            var py = y + p.y;
 
-    private void FillRandom(float p)
-    {
-        Fill(i => UnityEngine.Random.value > p ? GetForegroundColor() : Color.clear);
+            var i = px + py * _texture.width;
+            if (i >= 0 && i < _colors.Length)
+                _colors[i] = GetForegroundColor();
+        }
     }
 
     private Color GetForegroundColor()
@@ -256,12 +310,18 @@ public class GpuGameOfLife : MonoBehaviour
     {
         GetComponent<Camera>().backgroundColor = BackgroundColor;
 
-        _textAreaBackgroundTexture.SetPixels32(new Color32[] { BackgroundColor });
-        _textAreaBackgroundTexture.Apply();
+        _backgroundColorTexture.SetPixel(0, 0, BackgroundColor);
+        _backgroundColorTexture.Apply();
+
+        _foregroundColorTexture.SetPixel(0, 0, ForegroundColor);
+        _foregroundColorTexture.Apply();
+
+        _disabledColorTexture.SetPixel(0, 0, Color.Lerp(ForegroundColor, BackgroundColor, 0.8f));
+        _disabledColorTexture.Apply();
 
         _textAreaStyle.normal.textColor = ForegroundColor;
 
-        FillEmpty();
+        InitializeColors();
     }
 
     public class Neighborhood
