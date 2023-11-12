@@ -71,12 +71,12 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
             _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[←] [→] change rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
+            _stringBuilder.AppendLine($"[←] [→] rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[↑] [↓] change speed: {_timeScale}x");
+            _stringBuilder.AppendLine($"[↓] [↑] speed: {_timeScale}x");
             _stringBuilder.AppendLine($"[SPACE] toggle pause");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[N] change neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
+            _stringBuilder.AppendLine($"[N] neighborhood: {CurrentNeighborhood} ({_currentNeighborhoodIndex + 1}/{_neighborhoods.Count})");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[RMB] pan, twice to reset");
             _stringBuilder.AppendLine($"[SCROLL WHEEL] zoom: {_scale}x");
