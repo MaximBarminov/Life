@@ -8,11 +8,11 @@ public class GpuGameOfLife : MonoBehaviour
     public Font Font;
     public Material Material;
 
-    private const int PatternExtraSize = 3;
+    private const int SpawnPatternRadius = 3;
 
     private readonly List<Neighborhood> _neighborhoods = new();
-    private readonly HashSet<Vector2Int> _pattern = new();
     private readonly List<Rule> _rules = new();
+    private readonly HashSet<Vector2Int> _spawnPattern = new();
     private readonly StringBuilder _stringBuilder = new();
 
     private Texture2D _backgroundColorTexture;
@@ -88,22 +88,22 @@ public class GpuGameOfLife : MonoBehaviour
 
             GUILayout.Space(10);
 
-            for (var y = PatternExtraSize; y >= -PatternExtraSize; y--)
+            for (var y = SpawnPatternRadius; y >= -SpawnPatternRadius; y--)
             {
                 GUILayout.BeginHorizontal(_rowStyle);
-                for (var x = -PatternExtraSize; x <= PatternExtraSize; x++)
+                for (var x = -SpawnPatternRadius; x <= SpawnPatternRadius; x++)
                 {
                     var xy = new Vector2Int(x, y);
-                    var contains = _pattern.Contains(xy);
+                    var contains = _spawnPattern.Contains(xy);
                     if (GUILayout.Button(string.Empty, contains ? _onStyle : _offStyle, GUILayout.Width(16), GUILayout.Height(16)))
                     {
                         if (contains)
                         {
-                            _pattern.Remove(xy);
+                            _spawnPattern.Remove(xy);
                         }
                         else
                         {
-                            _pattern.Add(xy);
+                            _spawnPattern.Add(xy);
                         }
                     }
                 }
@@ -150,7 +150,7 @@ public class GpuGameOfLife : MonoBehaviour
         _neighborhoods.Add(new Neighborhood("Moore", 1, 1, 1, 1, 0, 1, 1, 1, 1));
         _neighborhoods.Add(new Neighborhood("Von Neumann", 0, 1, 0, 1, 0, 1, 0, 1, 0));
 
-        InitializePattern();
+        InitializeSpawnPattern();
 
         _backgroundColorTexture = new Texture2D(1, 1);
         _foregroundColorTexture = new Texture2D(1, 1);
@@ -195,7 +195,7 @@ public class GpuGameOfLife : MonoBehaviour
             _paused ^= true;
 
         if (Input.GetKeyDown(KeyCode.R))
-            InitializePattern();
+            InitializeSpawnPattern();
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
             SpawnCenter();
@@ -287,10 +287,10 @@ public class GpuGameOfLife : MonoBehaviour
         Graphics.Blit(_texture, _renderTexture);
     }
 
-    private void InitializePattern()
+    private void InitializeSpawnPattern()
     {
-        _pattern.Clear();
-        _pattern.Add(new Vector2Int(0, 0));
+        _spawnPattern.Clear();
+        _spawnPattern.Add(new Vector2Int(0, 0));
     }
 
     private void InvalidateTheme()
@@ -318,7 +318,7 @@ public class GpuGameOfLife : MonoBehaviour
 
     private void Spawn(int x, int y)
     {
-        foreach (var p in _pattern)
+        foreach (var p in _spawnPattern)
         {
             var px = x + p.x;
             var py = y + p.y;
@@ -338,7 +338,7 @@ public class GpuGameOfLife : MonoBehaviour
     {
         InitializeColors(() =>
         {
-            var count = _texture.width * _texture.height * p / _pattern.Count;
+            var count = _texture.width * _texture.height * p / _spawnPattern.Count;
             for (var i = 0; i < count; i++)
                 Spawn(UnityEngine.Random.Range(0, _texture.width), UnityEngine.Random.Range(0, _texture.height));
         });
