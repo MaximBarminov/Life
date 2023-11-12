@@ -20,7 +20,7 @@ public class GpuGameOfLife : MonoBehaviour
     private GUIStyle _containerStyle;
     private int _currentNeighborhoodIndex;
     private int _currentRuleIndex;
-    private bool _darkMode;
+    private bool _darkMode = true;
     private bool _decoy;
     private Texture2D _disabledColorTexture;
     private float _elapsedTime;
