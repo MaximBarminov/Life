@@ -37,11 +37,11 @@ public class GpuGameOfLife : MonoBehaviour
     private RenderTexture _renderTexture2;
     private GUIStyle _rowStyle;
     private int _scale = 2;
+    private (int, int)? _screenSize;
     private bool _showUI = true;
     private GUIStyle _textAreaStyle;
     private Texture2D _texture;
     private float _timeScale = 1;
-    private (int, int)? _screenSize;
 
     public Color BackgroundColor => _darkMode ? Color.black : Color.white;
 
