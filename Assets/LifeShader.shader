@@ -1,4 +1,4 @@
-Shader "Custom/GameOfLifeShader"
+Shader "Custom/LifeShader"
 {
     Properties
     {
