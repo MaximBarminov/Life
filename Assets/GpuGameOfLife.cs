@@ -166,8 +166,6 @@ public class GpuGameOfLife : MonoBehaviour
         _offStyle = new GUIStyle { margin = new RectOffset(0, 1, 0, 1) };
         _offStyle.normal.background = _disabledColorTexture;
 
-        Shader.SetGlobalVector("_MainTexSize", new Vector4(1.0f / _texture.width, 1.0f / _texture.height));
-
         InvalidateTheme();
     }
 
@@ -261,6 +259,7 @@ public class GpuGameOfLife : MonoBehaviour
             }
         }
 
+        Shader.SetGlobalVector("_MainTexSize", new Vector4(1.0f / _texture.width, 1.0f / _texture.height));
         Shader.SetGlobalFloatArray("_N", CurrentNeighborhood.N);
         Shader.SetGlobalFloatArray("_B", CurrentRule.B);
         Shader.SetGlobalFloatArray("_S", CurrentRule.S);
