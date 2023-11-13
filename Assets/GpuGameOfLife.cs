@@ -156,7 +156,7 @@ public class GpuGameOfLife : MonoBehaviour
         _containerStyle = new GUIStyle { padding = new RectOffset(10, 10, 10, 10) };
         _containerStyle.normal.background = _backgroundColorTexture;
 
-        _textAreaStyle = new GUIStyle { font = Font, fontSize = 18 };
+        _textAreaStyle = new GUIStyle { font = Font, fontSize = 14 };
 
         _rowStyle = new GUIStyle { margin = new RectOffset(10, 0, 0, 0) };
 
@@ -294,7 +294,7 @@ public class GpuGameOfLife : MonoBehaviour
     private void InvalidateTexture()
     {
         var screenSize = (Screen.width, Screen.height);
-        if (screenSize == _screenSize)
+        if (screenSize == _screenSize || !Application.isFocused)
             return;
 
         if (_screenSize != null)
