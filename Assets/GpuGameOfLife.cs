@@ -66,11 +66,11 @@ public class GpuGameOfLife : MonoBehaviour
             GUILayout.BeginVertical(_containerStyle);
 
             _stringBuilder.Clear();
-            _stringBuilder.AppendLine($"[F1] toggle UI");
+            _stringBuilder.AppendLine($"[Z] toggle UI");
             _stringBuilder.AppendLine();
-            _stringBuilder.AppendLine($"[F2] toggle dark mode: {ToOnOff(_darkMode)}");
-            _stringBuilder.AppendLine($"[F3] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
-            _stringBuilder.AppendLine($"[F4] toggle decoy: {ToOnOff(_decoy)}");
+            _stringBuilder.AppendLine($"[X] toggle dark mode: {ToOnOff(_darkMode)}");
+            _stringBuilder.AppendLine($"[C] toggle rainbow mode: {ToOnOff(_rainbowMode)}");
+            _stringBuilder.AppendLine($"[V] toggle decoy: {ToOnOff(_decoy)}");
             _stringBuilder.AppendLine();
             _stringBuilder.AppendLine($"[←] [→] rule: {CurrentRule} ({_currentRuleIndex + 1}/{_rules.Count})");
             _stringBuilder.AppendLine();
@@ -173,19 +173,19 @@ public class GpuGameOfLife : MonoBehaviour
     {
         InvalidateTexture();
 
-        if (Input.GetKeyDown(KeyCode.F1))
+        if (Input.GetKeyDown(KeyCode.Z))
             _showUI ^= true;
 
-        if (Input.GetKeyDown(KeyCode.F2))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             _darkMode ^= true;
             InvalidateTheme();
         }
 
-        if (Input.GetKeyDown(KeyCode.F3))
+        if (Input.GetKeyDown(KeyCode.C))
             _rainbowMode ^= true;
 
-        if (Input.GetKeyDown(KeyCode.F4))
+        if (Input.GetKeyDown(KeyCode.V))
             _decoy ^= true;
 
         if (Input.GetKeyDown(KeyCode.Space))
