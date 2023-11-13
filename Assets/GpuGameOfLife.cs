@@ -85,9 +85,7 @@ public class GpuGameOfLife : MonoBehaviour
             _stringBuilder.AppendLine($"[1] [2] [3] [4] [5] spawn");
             _stringBuilder.AppendLine($"Spawn pattern, [R] to reset:");
 
-            GUILayout.TextArea(_stringBuilder.ToString().Trim(), _textAreaStyle);
-
-            GUILayout.Space(10);
+            GUILayout.TextArea(_stringBuilder.ToString(), _textAreaStyle);
 
             for (var y = SpawnPatternRadius; y >= -SpawnPatternRadius; y--)
             {
@@ -156,7 +154,7 @@ public class GpuGameOfLife : MonoBehaviour
         _containerStyle = new GUIStyle { padding = new RectOffset(10, 10, 10, 10) };
         _containerStyle.normal.background = _backgroundColorTexture;
 
-        _textAreaStyle = new GUIStyle { font = Font, fontSize = 14 };
+        _textAreaStyle = new GUIStyle { font = Font, fontSize = 14, fontStyle = FontStyle.Bold };
 
         _rowStyle = new GUIStyle { margin = new RectOffset(10, 0, 0, 0) };
 
@@ -259,7 +257,6 @@ public class GpuGameOfLife : MonoBehaviour
             }
         }
 
-        Shader.SetGlobalVector("_MainTexSize", new Vector4(1.0f / _texture.width, 1.0f / _texture.height));
         Shader.SetGlobalFloatArray("_N", CurrentNeighborhood.N);
         Shader.SetGlobalFloatArray("_B", CurrentRule.B);
         Shader.SetGlobalFloatArray("_S", CurrentRule.S);
@@ -325,6 +322,8 @@ public class GpuGameOfLife : MonoBehaviour
         };
 
         _colors = new Color32[_texture.width * _texture.height];
+
+        Shader.SetGlobalVector("_MainTexSize", new Vector4(1.0f / _texture.width, 1.0f / _texture.height));
     }
 
     private void InvalidateTheme()
