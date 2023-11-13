@@ -41,6 +41,7 @@ public class GpuGameOfLife : MonoBehaviour
     private GUIStyle _textAreaStyle;
     private Texture2D _texture;
     private float _timeScale = 1;
+    private (int, int)? _screenSize;
 
     public Color BackgroundColor => _darkMode ? Color.black : Color.white;
 
@@ -118,25 +119,7 @@ public class GpuGameOfLife : MonoBehaviour
 
     protected void Start()
     {
-        _texture = new Texture2D(Screen.width / 2, Screen.height / 2)
-        {
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Repeat
-        };
-
-        _renderTexture = new RenderTexture(_texture.width, _texture.height, 16)
-        {
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Repeat
-        };
-
-        _renderTexture2 = new RenderTexture(_texture.width, _texture.height, 16)
-        {
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Repeat
-        };
-
-        _colors = new Color32[_texture.width * _texture.height];
+        InvalidateTexture();
 
         _rules.Add(new Rule("B3/S23", "Life"));
         _rules.Add(new Rule("B1/S012345678", "H-trees"));
@@ -190,6 +173,8 @@ public class GpuGameOfLife : MonoBehaviour
 
     protected void Update()
     {
+        InvalidateTexture();
+
         if (Input.GetKeyDown(KeyCode.F1))
             _showUI ^= true;
 
@@ -305,6 +290,42 @@ public class GpuGameOfLife : MonoBehaviour
     {
         _spawnPattern.Clear();
         _spawnPattern.Add(new Vector2Int(0, 0));
+    }
+
+    private void InvalidateTexture()
+    {
+        var screenSize = (Screen.width, Screen.height);
+        if (screenSize == _screenSize)
+            return;
+
+        if (_screenSize != null)
+        {
+            Destroy(_texture);
+            Destroy(_renderTexture);
+            Destroy(_renderTexture2);
+        }
+
+        _screenSize = screenSize;
+
+        _texture = new Texture2D(Screen.width / 2, Screen.height / 2)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Repeat
+        };
+
+        _renderTexture = new RenderTexture(_texture.width, _texture.height, 16)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Repeat
+        };
+
+        _renderTexture2 = new RenderTexture(_texture.width, _texture.height, 16)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Repeat
+        };
+
+        _colors = new Color32[_texture.width * _texture.height];
     }
 
     private void InvalidateTheme()
