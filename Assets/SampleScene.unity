@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 963194226}
   - component: {fileID: 963194230}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: MainCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -228,10 +228,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5bff5bca35de8f4fb56dbb8bd8afd08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Material: {fileID: 2100000, guid: 4b93059aaaadbc04581624d865f87f68, type: 2}
   Font: {fileID: 12800000, guid: b0b64c02f9f927d4cad7bc1d226f61fb, type: 3}
-  BackgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  ForegroundColor: {r: 1, g: 1, b: 1, a: 1}
+  Material: {fileID: 2100000, guid: 4b93059aaaadbc04581624d865f87f68, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
