@@ -154,7 +154,7 @@ public class GpuGameOfLife : MonoBehaviour
         _containerStyle = new GUIStyle { padding = new RectOffset(10, 10, 10, 10) };
         _containerStyle.normal.background = _backgroundColorTexture;
 
-        _textAreaStyle = new GUIStyle { font = Font, fontSize = 14, fontStyle = FontStyle.Bold };
+        _textAreaStyle = new GUIStyle { font = Font, fontSize = 16 };
 
         _rowStyle = new GUIStyle { margin = new RectOffset(10, 0, 0, 0) };
 
