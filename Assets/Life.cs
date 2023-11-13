@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-public partial class Life : MonoBehaviour
+public class Life : MonoBehaviour
 {
     public Font Font;
     public Material Material;
